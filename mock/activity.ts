@@ -1,0 +1,197 @@
+import { Request, Response } from 'express';
+import { TgTask, TgVoteQuest } from '@/types/activity';
+
+let activities: TgTask[] = [
+  {
+    id: 1,
+    taskName: 'Task 1',
+    description: 'Description for Task 1',
+    imageUrl: 'https://via.placeholder.com/150',
+    status: 'active',
+    type: 'vote',
+    reward: 'Reward 1',
+    startDate: '2024-01-01T00:00:00Z',
+    endDate: '2024-01-31T23:59:59Z',
+    taskNameCn: '任务1',
+    descriptionCn: '任务1的描述',
+    startLink: 'https://example.com/start',
+    createTime: '2024-01-01T00:00:00Z',
+    updateTime: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 2,
+    taskName: 'Task 2',
+    description: 'Description for Task 2',
+    imageUrl: 'https://via.placeholder.com/150',
+    status: 'inactive',
+    type: 'custom',
+    reward: 'Reward 2',
+    startDate: '2024-02-01T00:00:00Z',
+    endDate: '2024-02-28T23:59:59Z',
+    taskNameCn: '任务2',
+    descriptionCn: '任务2的描述',
+    startLink: 'https://example.com/start2',
+    createTime: '2024-02-01T00:00:00Z',
+    updateTime: '2024-02-01T00:00:00Z',
+  },
+];
+
+let voteQuests: TgVoteQuest[] = [
+  {
+    id: 1,
+    questId: 1,
+    optionDescription: 'Option 1 for Task 1',
+    currentVotes: 100,
+    voteUsers: 50,
+    createTime: '2024-01-01T00:00:00Z',
+    updateTime: '2024-01-01T00:00:00Z',
+    optionName: 'Option 1',
+  },
+  {
+    id: 2,
+    questId: 1,
+    optionDescription: 'Option 2 for Task 1',
+    currentVotes: 200,
+    voteUsers: 100,
+    createTime: '2024-01-01T00:00:00Z',
+    updateTime: '2024-01-01T00:00:00Z',
+    optionName: 'Option 2',
+  },
+];
+
+const mockData = {
+    code: 0,
+    msg: 'Success',
+};
+
+function getActivity(req: Request, res: Response) {
+  const { id } = req.params;
+  const activity = activities.find((item) => item.id === parseInt(id, 10));
+  if (activity) {
+    const votes = voteQuests.filter((vote) => vote.questId === activity.id);
+    res.json({ ...mockData, data: { ...activity, votes } });
+  } else {
+    res.status(404).json({ ...mockData, data: [], message: 'Activity not found' });
+  }
+}
+
+function addActivity(req: Request, res: Response) {
+  const {
+    taskName,
+    description,
+    imageUrl,
+    status,
+    type,
+    reward,
+    startDate,
+    endDate,
+    taskNameCn,
+    descriptionCn,
+    startLink,
+    optionName,
+    optionDescription,
+  } = req.body;
+  const id = activities.length + 1;
+  const newActivity: TgTask = {
+    id,
+    taskName,
+    description,
+    imageUrl,
+    status,
+    type,
+    reward,
+    startDate,
+    endDate,
+    taskNameCn,
+    descriptionCn,
+    startLink,
+    createTime: new Date().toISOString(),
+    updateTime: new Date().toISOString(),
+  };
+  activities.push(newActivity);
+  if (type === 'vote') {
+    const voteId = voteQuests.length + 1;
+    const newVoteQuest: TgVoteQuest = {
+      id: voteId,
+      questId: id,
+      optionDescription,
+      currentVotes: 0,
+      voteUsers: 0,
+      createTime: new Date().toISOString(),
+      updateTime: new Date().toISOString(),
+      optionName,
+    };
+    voteQuests.push(newVoteQuest);
+  }
+  res.json({ ...mockData, data: newActivity });
+}
+
+function updateActivity(req: Request, res: Response) {
+  const {
+    id,
+    taskName,
+    description,
+    imageUrl,
+    status,
+    type,
+    reward,
+    startDate,
+    endDate,
+    taskNameCn,
+    descriptionCn,
+    startLink,
+    optionName,
+    optionDescription,
+  } = req.body;
+  const index = activities.findIndex((item) => item.id === parseInt(id, 10));
+  if (index !== -1) {
+    activities[index] = {
+      ...activities[index],
+      taskName,
+      description,
+      imageUrl,
+      status,
+      type,
+      reward,
+      startDate,
+      endDate,
+      taskNameCn,
+      descriptionCn,
+      startLink,
+      updateTime: new Date().toISOString(),
+    };
+    if (type === 'vote') {
+      const voteIndex = voteQuests.findIndex((vote) => vote.questId === parseInt(id, 10));
+      if (voteIndex !== -1) {
+        voteQuests[voteIndex] = {
+          ...voteQuests[voteIndex],
+          optionName,
+          optionDescription,
+          updateTime: new Date().toISOString(),
+        };
+      } else {
+        const voteId = voteQuests.length + 1;
+        const newVoteQuest: TgVoteQuest = {
+          id: voteId,
+          questId: parseInt(id, 10),
+          optionDescription,
+          currentVotes: 0,
+          voteUsers: 0,
+          createTime: new Date().toISOString(),
+          updateTime: new Date().toISOString(),
+          optionName,
+        };
+        voteQuests.push(newVoteQuest);
+      }
+    }
+    res.json({ ...mockData, data: activities[index] });
+  } else {
+    res.status(404).json({ ...mockData, data: [], message: 'Activity not found' });
+  }
+}
+
+export default {
+  'GET /api/activity/:id': getActivity,
+  'POST /api/activity': addActivity,
+  'PUT /api/activity': updateActivity,
+};

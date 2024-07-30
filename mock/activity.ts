@@ -4,12 +4,12 @@ import { TgTask, TgVoteQuest } from '@/types/activity';
 let activities: TgTask[] = [
   {
     id: 1,
-    taskName: 'Task 1',
-    description: 'Description for Task 1',
+    taskName: '任务1',
+    description: '任务1的描述',
     imageUrl: 'https://via.placeholder.com/150',
     status: 'active',
     type: 'vote',
-    reward: 'Reward 1',
+    reward: '奖励1',
     startDate: '2024-01-01T00:00:00Z',
     endDate: '2024-01-31T23:59:59Z',
     taskNameCn: '任务1',
@@ -20,12 +20,12 @@ let activities: TgTask[] = [
   },
   {
     id: 2,
-    taskName: 'Task 2',
-    description: 'Description for Task 2',
+    taskName: '任务2',
+    description: '任务2的描述',
     imageUrl: 'https://via.placeholder.com/150',
     status: 'inactive',
     type: 'custom',
-    reward: 'Reward 2',
+    reward: '奖励2',
     startDate: '2024-02-01T00:00:00Z',
     endDate: '2024-02-28T23:59:59Z',
     taskNameCn: '任务2',
@@ -40,38 +40,37 @@ let voteQuests: TgVoteQuest[] = [
   {
     id: 1,
     questId: 1,
-    optionDescription: 'Option 1 for Task 1',
+    optionDescription: '选项1的描述',
     currentVotes: 100,
     voteUsers: 50,
     createTime: '2024-01-01T00:00:00Z',
     updateTime: '2024-01-01T00:00:00Z',
-    optionName: 'Option 1',
+    optionName: '选项1',
   },
   {
     id: 2,
     questId: 1,
-    optionDescription: 'Option 2 for Task 1',
+    optionDescription: '选项2的描述',
     currentVotes: 200,
     voteUsers: 100,
     createTime: '2024-01-01T00:00:00Z',
     updateTime: '2024-01-01T00:00:00Z',
-    optionName: 'Option 2',
+    optionName: '选项2',
   },
 ];
 
-const mockData = {
-    code: 0,
-    msg: 'Success',
-};
+function getActivities(req: Request, res: Response) {
+  res.send({ code: 200, msg: 'success', data: activities });
+}
 
 function getActivity(req: Request, res: Response) {
   const { id } = req.params;
   const activity = activities.find((item) => item.id === parseInt(id, 10));
   if (activity) {
     const votes = voteQuests.filter((vote) => vote.questId === activity.id);
-    res.json({ ...mockData, data: { ...activity, votes } });
+    res.send({ code: 200, msg: 'success', data: { ...activity, votes } });
   } else {
-    res.status(404).json({ ...mockData, data: [], message: 'Activity not found' });
+    res.status(404).send({ message: 'Activity not found' });
   }
 }
 
@@ -123,7 +122,7 @@ function addActivity(req: Request, res: Response) {
     };
     voteQuests.push(newVoteQuest);
   }
-  res.json({ ...mockData, data: newActivity });
+  res.send({ code: 200, msg: 'success', data: newActivity });
 }
 
 function updateActivity(req: Request, res: Response) {
@@ -184,13 +183,14 @@ function updateActivity(req: Request, res: Response) {
         voteQuests.push(newVoteQuest);
       }
     }
-    res.json({ ...mockData, data: activities[index] });
+    res.send({ code: 200, msg: 'success', data: activities[index] });
   } else {
-    res.status(404).json({ ...mockData, data: [], message: 'Activity not found' });
+    res.status(404).send({ message: 'Activity not found' });
   }
 }
 
 export default {
+  'GET /api/activities': getActivities,
   'GET /api/activity/:id': getActivity,
   'POST /api/activity': addActivity,
   'PUT /api/activity': updateActivity,

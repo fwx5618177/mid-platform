@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { TgTask, TgVoteQuest } from '@/types/activity';
+import { TgTask, TgVoteQuest } from '@/types/quest';
 
 let activities: TgTask[] = [
   {

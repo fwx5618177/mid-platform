@@ -26,31 +26,31 @@ export interface TgTask {
     optionName: string;
   }
   
-  export type GetActivitiesResponse = {
+  export type GetQuestsResponse = {
     code: number;
     msg: string;
     data: TgTask[];
   };
   
-  export type GetActivityResponse = {
+  export type GetQuestResponse = {
     code: number;
     msg: string;
     data: TgTask & { votes: TgVoteQuest[] };
   };
   
-  export type AddActivityResponse = {
+  export type AddQuestResponse = {
     code: number;
     msg: string;
     data: TgTask;
   };
   
-  export type UpdateActivityResponse = {
+  export type UpdateQuestResponse = {
     code: number;
     msg: string;
     data: TgTask;
   };
   
-  export interface AddActivityParams {
+  export interface AddQuestParams {
     taskName: string;
     description: string;
     imageUrl: string;
@@ -66,7 +66,7 @@ export interface TgTask {
     optionDescription?: string;
   }
   
-  export interface UpdateActivityParams extends AddActivityParams {
+  export interface UpdateQuestParams extends AddQuestParams {
     id: number;
   }
   

@@ -62,10 +62,10 @@ export default [
     // ],
   },
   {
-    path: '/activity',
-    name: '活动管理',
+    path: '/quest',
+    name: 'quest',
     icon: 'smile',
-    component: './activity',
+    component: './Quest',
   },
   {
     path: '/',

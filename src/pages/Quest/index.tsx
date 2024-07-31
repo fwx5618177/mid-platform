@@ -16,25 +16,25 @@ import {
 } from 'antd';
 import { useRequest } from '@umijs/max';
 import moment from 'moment';
-import { getActivities, addActivity, updateActivity, getActivity } from '@/services/ant-design-pro/activity';
-import { TgTask } from '@/types/activity';
+import { getQuests, addQuest, updateQuest, getQuest } from '@/services/ant-design-pro/quest';
+import { TgTask } from '@/types/quest';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-const Activity: React.FC = () => {
+const Quest: React.FC = () => {
   const [form] = Form.useForm();
   const [type, setType] = useState<string>('custom');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentActivity, setCurrentActivity] = useState<Partial<TgTask> | null>(null);
+  const [currentQuest, setCurrentQuest] = useState<Partial<TgTask> | null>(null);
   const [voteOptions, setVoteOptions] = useState<{ name: string; description: string }[]>([
     { name: '', description: '' },
     { name: '', description: '' },
   ]);
 
-  const { data: activities, loading, refresh } = useRequest(getActivities);
+  const { data: activities, loading, refresh } = useRequest(getQuests);
 
-  const { run: addRun } = useRequest(addActivity, {
+  const { run: addRun } = useRequest(addQuest, {
     manual: true,
     onSuccess: () => {
       message.success('活动添加成功');
@@ -46,7 +46,7 @@ const Activity: React.FC = () => {
     },
   });
 
-  const { run: updateRun } = useRequest(updateActivity, {
+  const { run: updateRun } = useRequest(updateQuest, {
     manual: true,
     onSuccess: () => {
       message.success('活动更新成功');
@@ -63,8 +63,8 @@ const Activity: React.FC = () => {
   };
 
   const handleEdit = async (id: number) => {
-    const { data } = await getActivity(id.toString());
-    setCurrentActivity(data);
+    const { data } = await getQuest(id.toString());
+    setCurrentQuest(data);
     form.setFieldsValue({
       ...data,
       rangeTime: [moment(data.startDate), moment(data.endDate)],
@@ -105,13 +105,13 @@ const Activity: React.FC = () => {
     const { rangeTime, ...rest } = values;
     const [startDate, endDate] = rangeTime;
     const params = { ...rest, startDate: startDate.toISOString(), endDate: endDate.toISOString() };
-    if (currentActivity) {
-      updateRun({ id: currentActivity.id, ...params, votes: voteOptions });
+    if (currentQuest) {
+      updateRun({ id: currentQuest.id, ...params, votes: voteOptions });
     } else {
       addRun({ ...params, votes: voteOptions });
     }
     setIsModalVisible(false);
-    setCurrentActivity(null);
+    setCurrentQuest(null);
   };
 
   const columns = [
@@ -161,11 +161,11 @@ const Activity: React.FC = () => {
       </Card>
 
       <Modal
-        title={currentActivity ? '编辑活动' : '添加活动'}
+        title={currentQuest ? '编辑活动' : '添加活动'}
         visible={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
-          setCurrentActivity(null);
+          setCurrentQuest(null);
         }}
         footer={null}
       >
@@ -230,4 +230,4 @@ const Activity: React.FC = () => {
   );
 };
 
-export default Activity;
+export default Quest;

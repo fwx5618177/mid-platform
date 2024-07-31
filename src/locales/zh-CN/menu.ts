@@ -30,6 +30,7 @@ export default {
   'menu.list.search-list.projects': '搜索列表（项目）',
   'menu.list.search-list.applications': '搜索列表（应用）',
   'menu.hierarchy': '伞下列表',
+  'menu.quest': '活动管理',
   'menu.profile': '详情页',
   'menu.profile.basic': '基础详情页',
   'menu.profile.advanced': '高级详情页',

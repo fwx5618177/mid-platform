@@ -4,20 +4,18 @@ import { request } from '@umijs/max';
 
 const apiBaseUrl = 'http://admin-bff.data.worldbrain.me';
 
-/** 发送验证码 POST /api/login/captcha */
-export async function getFakeCaptcha(
-  params: {
-    // query
-    /** 手机号 */
-    phone?: string;
-  },
-  options?: { [key: string]: any },
-) {
-  return request<API.FakeCaptcha>(`${apiBaseUrl}/api/login/`, {
+export async function getUserInfo() {
+  return request('/api/currentUser', {
     method: 'GET',
-    params: {
-      ...params,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
-    ...(options || {}),
+  });
+}
+
+export async function login(data: { username: string; password: string }) {
+  return request('/api/login', {
+    method: 'POST',
+    data,
   });
 }

@@ -59,22 +59,22 @@ let voteQuests: TgVoteQuest[] = [
   },
 ];
 
-function getActivities(req: Request, res: Response) {
+function getQuests(req: Request, res: Response) {
   res.send({ code: 200, msg: 'success', data: activities });
 }
 
-function getActivity(req: Request, res: Response) {
+function getQuest(req: Request, res: Response) {
   const { id } = req.params;
-  const activity = activities.find((item) => item.id === parseInt(id, 10));
-  if (activity) {
-    const votes = voteQuests.filter((vote) => vote.questId === activity.id);
-    res.send({ code: 200, msg: 'success', data: { ...activity, votes } });
+  const quest = activities.find((item) => item.id === parseInt(id, 10));
+  if (quest) {
+    const votes = voteQuests.filter((vote) => vote.questId === quest.id);
+    res.send({ code: 200, msg: 'success', data: { ...quest, votes } });
   } else {
-    res.status(404).send({ message: 'Activity not found' });
+    res.status(404).send({ message: 'Quest not found' });
   }
 }
 
-function addActivity(req: Request, res: Response) {
+function addQuest(req: Request, res: Response) {
   const {
     taskName,
     description,
@@ -91,7 +91,7 @@ function addActivity(req: Request, res: Response) {
     optionDescription,
   } = req.body;
   const id = activities.length + 1;
-  const newActivity: TgTask = {
+  const newQuest: TgTask = {
     id,
     taskName,
     description,
@@ -107,7 +107,7 @@ function addActivity(req: Request, res: Response) {
     createTime: new Date().toISOString(),
     updateTime: new Date().toISOString(),
   };
-  activities.push(newActivity);
+  activities.push(newQuest);
   if (type === 'vote') {
     const voteId = voteQuests.length + 1;
     const newVoteQuest: TgVoteQuest = {
@@ -122,10 +122,10 @@ function addActivity(req: Request, res: Response) {
     };
     voteQuests.push(newVoteQuest);
   }
-  res.send({ code: 200, msg: 'success', data: newActivity });
+  res.send({ code: 200, msg: 'success', data: newQuest });
 }
 
-function updateActivity(req: Request, res: Response) {
+function updateQuest(req: Request, res: Response) {
   const {
     id,
     taskName,
@@ -185,13 +185,13 @@ function updateActivity(req: Request, res: Response) {
     }
     res.send({ code: 200, msg: 'success', data: activities[index] });
   } else {
-    res.status(404).send({ message: 'Activity not found' });
+    res.status(404).send({ message: 'Quest not found' });
   }
 }
 
 export default {
-  'GET /api/activities': getActivities,
-  'GET /api/activity/:id': getActivity,
-  'POST /api/activity': addActivity,
-  'PUT /api/activity': updateActivity,
+  'GET /api/quests': getQuests,
+  'GET /api/quest/:id': getQuest,
+  'POST /api/quest': addQuest,
+  'PUT /api/quest': updateQuest,
 };

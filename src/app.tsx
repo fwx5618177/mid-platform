@@ -1,12 +1,13 @@
 import { AvatarDropdown, AvatarName, Footer, Question, SelectLang } from '@/components';
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
 import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { SettingDrawer } from '@ant-design/pro-components';
+import { PageLoading, SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
+import { getUserInfo } from './services/ant-design-pro/login';
+import access from './access';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 
@@ -15,31 +16,37 @@ const loginPath = '/user/login';
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  // currentUser?: API.CurrentUser;
+  currentUser?: API.CurrentUser;
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
+  const token = localStorage.getItem('token');
+  
   const fetchUserInfo = async () => {
     try {
-      const msg = await queryCurrentUser({
-        skipErrorHandler: true,
-      });
-      return msg.data;
+      if (token) {
+        const userInfo = await getUserInfo();
+        return userInfo.data;
+      }
+      return undefined;
     } catch (error) {
-      // history.push(loginPath);
+      return undefined;
     }
-    return undefined;
   };
+
   // 如果不是登录页面，执行
   const { location } = history;
-  if (location.pathname !== loginPath) {
-    // const currentUser = await fetchUserInfo();
+  console.log('fetchUserInfo', location);
+  if (location.pathname !== loginPath || token) {
+    const currentUser = await fetchUserInfo();
+    console.log('getInitialState', currentUser);
     return {
       fetchUserInfo,
-      // currentUser,
+      currentUser,
       settings: defaultSettings as Partial<LayoutSettings>,
     };
   }
+
   return {
     fetchUserInfo,
     settings: defaultSettings as Partial<LayoutSettings>,
@@ -62,11 +69,22 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     footerRender: () => <Footer />,
     onPageChange: () => {
-      // const { location } = history;
-      // // 如果没有登录，重定向到 login
-      // if (!initialState?.currentUser && location.pathname !== loginPath  ) {
-      //   history.push(loginPath);
-      // }
+      const { location } = history;
+
+      console.log('onPageChange', location.pathname, initialState?.currentUser);
+      // 如果没有登录，重定向到 login
+      if (!initialState?.currentUser && location.pathname !== loginPath) {
+        history.push(loginPath);
+      }
+    },
+    menuDataRender: (menuData) => {
+      const accessObj = access(initialState);
+      return menuData.filter((item) => {
+        if (item.access && !accessObj[item.access]) {
+          return false;
+        }
+        return true;
+      });
     },
     bgLayoutImgList: [
       {
@@ -98,10 +116,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       : [],
     menuHeaderRender: undefined,
     // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
+    unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
     childrenRender: (children) => {
-      // if (initialState?.loading) return <PageLoading />;
+      if (initialState?.loading) return <PageLoading />;
       return (
         <>
           {children}

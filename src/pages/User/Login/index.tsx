@@ -1,14 +1,12 @@
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
-import { LockOutlined, MobileOutlined, UserOutlined } from '@ant-design/icons';
+import { getUserInfo, login } from '@/services/ant-design-pro/login';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import {
   LoginForm,
-  ProFormCaptcha,
   ProFormCheckbox,
   ProFormText,
 } from '@ant-design/pro-components';
-import { FormattedMessage, Helmet, history, SelectLang, useIntl } from '@umijs/max';
+import { FormattedMessage, Helmet, history, SelectLang, useIntl, useModel } from '@umijs/max';
 import { Alert, message, Tabs } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
@@ -75,15 +73,16 @@ const LoginMessage: React.FC<{
 };
 
 const Login: React.FC = () => {
-  const [setUserLoginState] = useState<API.LoginResult>({ code: 0, data: { token: '' }, msg: '' });
+  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({ code: 0, data: { token: '' }, msg: '' });
   const [type, setType] = useState<string>('account');
   const { styles } = useStyles();
   const intl = useIntl();
+  const { setInitialState } = useModel('@@initialState');
 
   const handleSubmit = async (values: API.LoginParams) => {
     try {
       // 登录
-      const msg = await login({ ...values });
+      const msg = await login({ username: values?.username || '', password: values?.password || '' });
       if (msg.data.token) {
         localStorage.setItem('token', msg.data.token);
         const defaultLoginSuccessMessage = intl.formatMessage({
@@ -91,9 +90,16 @@ const Login: React.FC = () => {
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
-        // await fetchUserInfo();
+
+        // Fetch user info and set initial state
+        const userInfo = await getUserInfo();
+        await setInitialState((s) => ({ ...s, currentUser: userInfo.data }));
+
         const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/hierarchy');
+        const link = urlParams.get('redirect') || '/';
+
+        history.push(link);
+        
         return;
       }
       console.log(msg);
@@ -158,12 +164,14 @@ const Login: React.FC = () => {
             ]}
           />
 
-          <LoginMessage
-            content={intl.formatMessage({
-              id: 'pages.login.accountLogin.errorMessage',
-              defaultMessage: '账户或密码错误(admin/ant.design)',
-            })}
-          />
+          {userLoginState.code === 401 && (
+            <LoginMessage
+              content={intl.formatMessage({
+                id: 'pages.login.accountLogin.errorMessage',
+                defaultMessage: '账户或密码错误',
+              })}
+            />
+          )}
 
           {type === 'account' && (
             <>
@@ -175,7 +183,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.username.placeholder',
-                  defaultMessage: '用户名: admin or user',
+                  defaultMessage: '用户名: admin or editor',
                 })}
                 rules={[
                   {
@@ -197,7 +205,7 @@ const Login: React.FC = () => {
                 }}
                 placeholder={intl.formatMessage({
                   id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
+                  defaultMessage: '密码',
                 })}
                 rules={[
                   {
@@ -214,87 +222,6 @@ const Login: React.FC = () => {
             </>
           )}
 
-          {type === 'mobile' && (
-            <>
-              <ProFormText
-                fieldProps={{
-                  size: 'large',
-                  prefix: <MobileOutlined />,
-                }}
-                name="mobile"
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.phoneNumber.placeholder',
-                  defaultMessage: '手机号',
-                })}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.phoneNumber.required"
-                        defaultMessage="请输入手机号！"
-                      />
-                    ),
-                  },
-                  {
-                    pattern: /^1\d{10}$/,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.phoneNumber.invalid"
-                        defaultMessage="手机号格式错误！"
-                      />
-                    ),
-                  },
-                ]}
-              />
-              <ProFormCaptcha
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined />,
-                }}
-                captchaProps={{
-                  size: 'large',
-                }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.captcha.placeholder',
-                  defaultMessage: '请输入验证码',
-                })}
-                captchaTextRender={(timing, count) => {
-                  if (timing) {
-                    return `${count} ${intl.formatMessage({
-                      id: 'pages.getCaptchaSecondText',
-                      defaultMessage: '获取验证码',
-                    })}`;
-                  }
-                  return intl.formatMessage({
-                    id: 'pages.login.phoneLogin.getVerificationCode',
-                    defaultMessage: '获取验证码',
-                  });
-                }}
-                name="captcha"
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.captcha.required"
-                        defaultMessage="请输入验证码！"
-                      />
-                    ),
-                  },
-                ]}
-                onGetCaptcha={async (phone) => {
-                  const result = await getFakeCaptcha({
-                    phone,
-                  });
-                  if (!result) {
-                    return;
-                  }
-                  message.success('获取验证码成功！验证码为：1234');
-                }}
-              />
-            </>
-          )}
           <div
             style={{
               marginBottom: 24,

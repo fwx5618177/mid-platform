@@ -22,35 +22,6 @@ export default [
       },
     ],
   },
-  // {
-  //   path: '/welcome',
-  //   name: 'welcome',
-  //   icon: 'smile',
-  //   component: './Welcome',
-  // },
-  // {
-  //   path: '/admin',
-  //   name: 'admin',
-  //   icon: 'crown',
-  //   access: 'canAdmin',
-  //   routes: [
-  //     {
-  //       path: '/admin',
-  //       redirect: '/admin/sub-page',
-  //     },
-  //     {
-  //       path: '/admin/sub-page',
-  //       name: 'sub-page',
-  //       component: './Admin',
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: 'list.table-list',
-  //   icon: 'table',
-  //   path: '/list',
-  //   component: './TableList',
-  // },
   {
     path: '/hierarchy',
     name: 'hierarchy',
@@ -66,6 +37,11 @@ export default [
     name: 'quest',
     icon: 'smile',
     component: './Quest',
+    access: 'canEditQuest',
+    // wrappers: [
+    //   // 引用权限检查的高阶组件
+    //   '@/wrappers/authWrapper',
+    // ],
   },
   {
     path: '/',

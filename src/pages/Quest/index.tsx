@@ -17,7 +17,7 @@ import {
 import { useRequest } from '@umijs/max';
 import moment from 'moment';
 import { getQuests, addQuest, updateQuest, getQuest } from '@/services/ant-design-pro/quest';
-import { TgTask } from '@/types/quest';
+import { TgQuest } from '@/types/quest';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -26,10 +26,12 @@ const Quest: React.FC = () => {
   const [form] = Form.useForm();
   const [type, setType] = useState<string>('custom');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentQuest, setCurrentQuest] = useState<Partial<TgTask> | null>(null);
-  const [voteOptions, setVoteOptions] = useState<{ name: string; description: string }[]>([
-    { name: '', description: '' },
-    { name: '', description: '' },
+  const [currentQuest, setCurrentQuest] = useState<Partial<TgQuest> | null>(null);
+  const [voteOptions, setVoteOptions] = useState<
+    { option_name: string; option_description: string }[]
+  >([
+    { option_name: '', option_description: '' },
+    { option_name: '', option_description: '' },
   ]);
 
   const { data: activities, loading, refresh } = useRequest(getQuests);
@@ -67,12 +69,15 @@ const Quest: React.FC = () => {
     setCurrentQuest(data);
     form.setFieldsValue({
       ...data,
-      rangeTime: [moment(data.startDate), moment(data.endDate)],
+      range_time: [moment(data.start_date), moment(data.end_date)],
     });
     setType(data.type);
     if (data.type === 'vote' && data.votes) {
       setVoteOptions(
-        data.votes.map((vote) => ({ name: vote.optionName, description: vote.optionDescription })),
+        data.votes.map((vote) => ({
+          option_name: vote.option_name,
+          option_description: vote.option_description,
+        })),
       );
     }
     setIsModalVisible(true);
@@ -80,7 +85,7 @@ const Quest: React.FC = () => {
 
   const handleAddOption = () => {
     if (voteOptions.length < 10) {
-      setVoteOptions([...voteOptions, { name: '', description: '' }]);
+      setVoteOptions([...voteOptions, { option_name: '', option_description: '' }]);
     } else {
       message.warning('选项不能超过10个');
     }
@@ -95,19 +100,25 @@ const Quest: React.FC = () => {
     }
   };
 
-  const handleOptionChange = (index: number, field: 'name' | 'description', value: string) => {
+  const handleOptionChange = (
+    index: number,
+    field: 'option_name' | 'option_description',
+    value: string,
+  ) => {
     const newOptions = [...voteOptions];
     newOptions[index][field] = value;
     setVoteOptions(newOptions);
   };
 
   const handleSubmit = (values: any) => {
-    const { rangeTime, ...rest } = values;
-    const [startDate, endDate] = rangeTime;
-    const params = { ...rest, startDate: startDate.toISOString(), endDate: endDate.toISOString(), votes: voteOptions };
-
-
-    console.log(params);
+    const { range_time, ...rest } = values;
+    const [start_date, end_date] = range_time;
+    const params = {
+      ...rest,
+      start_date: start_date.toISOString(),
+      end_date: end_date.toISOString(),
+      votes: voteOptions,
+    };
     if (currentQuest) {
       updateRun({ id: currentQuest.id, ...params });
     } else {
@@ -120,8 +131,8 @@ const Quest: React.FC = () => {
   const columns = [
     {
       title: '任务名称',
-      dataIndex: 'taskName',
-      key: 'taskName',
+      dataIndex: 'task_name',
+      key: 'task_name',
     },
     {
       title: '任务类型',
@@ -130,20 +141,20 @@ const Quest: React.FC = () => {
     },
     {
       title: '开始时间',
-      dataIndex: 'startDate',
-      key: 'startDate',
+      dataIndex: 'start_date',
+      key: 'start_date',
       render: (text: string) => moment(text).format('YYYY-MM-DD HH:mm'),
     },
     {
       title: '结束时间',
-      dataIndex: 'endDate',
-      key: 'endDate',
+      dataIndex: 'end_date',
+      key: 'end_date',
       render: (text: string) => moment(text).format('YYYY-MM-DD HH:mm'),
     },
     {
       title: '操作',
       key: 'action',
-      render: (_: any, record: TgTask) => (
+      render: (_: any, record: TgQuest) => (
         <Button onClick={() => handleEdit(record.id)}>编辑</Button>
       ),
     },
@@ -173,7 +184,7 @@ const Quest: React.FC = () => {
         footer={null}
       >
         <Form form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item name="taskName" label="任务名称" rules={[{ required: true }]}>
+          <Form.Item name="task_name" label="任务名称" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
           <Form.Item name="description" label="任务描述">
@@ -185,8 +196,14 @@ const Quest: React.FC = () => {
               <Option value="custom">自定义</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="rangeTime" label="时间范围" rules={[{ required: true }]}>
+          <Form.Item name="range_time" label="时间范围" rules={[{ required: true }]}>
             <RangePicker showTime format="YYYY-MM-DD HH:mm" />
+          </Form.Item>
+          <Form.Item name="vote_price" label="投票价格" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="vote_limit" label="投票限制" rules={[{ required: true }]}>
+            <Input />
           </Form.Item>
           {type === 'vote' && (
             <>
@@ -196,16 +213,18 @@ const Quest: React.FC = () => {
                     <Col span={10}>
                       <Form.Item label={`选项 ${index + 1} 名称`} required>
                         <Input
-                          value={option.name}
-                          onChange={(e) => handleOptionChange(index, 'name', e.target.value)}
+                          value={option.option_name}
+                          onChange={(e) => handleOptionChange(index, 'option_name', e.target.value)}
                         />
                       </Form.Item>
                     </Col>
                     <Col span={12}>
                       <Form.Item label={`选项 ${index + 1} 描述`} required>
                         <Input.TextArea
-                          value={option.description}
-                          onChange={(e) => handleOptionChange(index, 'description', e.target.value)}
+                          value={option.option_description}
+                          onChange={(e) =>
+                            handleOptionChange(index, 'option_description', e.target.value)
+                          }
                         />
                       </Form.Item>
                     </Col>

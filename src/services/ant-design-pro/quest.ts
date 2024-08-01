@@ -1,11 +1,16 @@
 import { request } from '@umijs/max';
-import { GetQuestsResponse, GetQuestResponse, AddQuestParams, AddQuestResponse, UpdateQuestParams, UpdateQuestResponse } from '@/types/quest';
-
-const apiBaseUrl = process.env.REACT_APP_API_URL || '';
+import {
+  GetQuestsResponse,
+  GetQuestResponse,
+  AddQuestParams,
+  AddQuestResponse,
+  UpdateQuestParams,
+  UpdateQuestResponse,
+} from '@/types/quest';
 
 /** 获取活动列表: GET /api/quests */
 export async function getQuests() {
-  return request<GetQuestsResponse>(`${apiBaseUrl}/api/quests`, {
+  return request<GetQuestsResponse>(`/api/quests`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -15,7 +20,7 @@ export async function getQuests() {
 
 /** 获取活动详情: GET /api/quest/:id */
 export async function getQuest(id: string) {
-  return request<GetQuestResponse>(`${apiBaseUrl}/api/quest/${id}`, {
+  return request<GetQuestResponse>(`/api/quest/${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -25,7 +30,7 @@ export async function getQuest(id: string) {
 
 /** 添加活动: POST /api/quest */
 export async function addQuest(params: AddQuestParams) {
-  return request<AddQuestResponse>(`${apiBaseUrl}/api/quest`, {
+  return request<AddQuestResponse>(`/api/quest`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,7 +41,7 @@ export async function addQuest(params: AddQuestParams) {
 
 /** 更新活动: PUT /api/quest */
 export async function updateQuest(params: UpdateQuestParams) {
-  return request<UpdateQuestResponse>(`${apiBaseUrl}/api/quest`, {
+  return request<UpdateQuestResponse>(`/api/quest`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

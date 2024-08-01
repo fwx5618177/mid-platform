@@ -1,8 +1,6 @@
 // src/services/hierarchyList.ts
 import { request } from '@umijs/max';
 
-const apiBaseUrl = 'http://admin-bff.data.worldbrains.org';
-
 export interface HierarchyData {
   user_id: number;
   total_nts: number;
@@ -57,7 +55,7 @@ export async function fetchHierarchyList(
   options?: FetchHierarchyListOptions,
 ) {
   const token = localStorage.getItem('token');
-  return request<GetUserHierarchyDataResponse>(`${apiBaseUrl}/v1/admin/hierarchy`, {
+  return request<GetUserHierarchyDataResponse>(`/v1/admin/hierarchy`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -76,7 +74,7 @@ export async function fetchDownloadUrl(
   options?: FetchHierarchyListOptions,
 ) {
   const token = localStorage.getItem('token');
-  return request<GetDownloadUrlResponse>(`${apiBaseUrl}/v1/admin/hierarchy/export`, {
+  return request<GetDownloadUrlResponse>(`/v1/admin/hierarchy/export`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

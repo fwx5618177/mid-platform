@@ -9,7 +9,10 @@ import { errorConfig } from './requestErrorConfig';
 import { getUserInfo } from './services/ant-design-pro/login';
 import access from './access';
 const isDev = process.env.NODE_ENV === 'development';
+const baseURL = process.env.REACT_APP_API_URL || 'http://admin-bff.data.worldbrains.me';
 const loginPath = '/user/login';
+
+console.log('API URL:', process.env.API_URL, process.env);
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -21,7 +24,7 @@ export async function getInitialState(): Promise<{
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
   const token = localStorage.getItem('token');
-  
+
   const fetchUserInfo = async () => {
     try {
       if (token) {
@@ -80,6 +83,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     menuDataRender: (menuData) => {
       const accessObj = access(initialState);
       return menuData.filter((item) => {
+        // @ts-ignore
         if (item.access && !accessObj[item.access]) {
           return false;
         }
@@ -149,5 +153,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {
+  baseURL,
+  timeout: 10000,
   ...errorConfig,
 };

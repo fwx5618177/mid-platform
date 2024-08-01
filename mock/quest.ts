@@ -1,61 +1,53 @@
 import { Request, Response } from 'express';
-import { TgTask, TgVoteQuest } from '@/types/quest';
+import { TgQuest, TgVoteQuest } from '@/types/quest';
 
-let activities: TgTask[] = [
+let activities: TgQuest[] = [
   {
     id: 1,
-    taskName: '任务1',
+    task_name: '任务1',
     description: '任务1的描述',
-    imageUrl: 'https://via.placeholder.com/150',
-    status: 'active',
+    image_url: 'https://via.placeholder.com/150',
     type: 'vote',
     reward: '奖励1',
-    startDate: '2024-01-01T00:00:00Z',
-    endDate: '2024-01-31T23:59:59Z',
-    taskNameCn: '任务1',
-    descriptionCn: '任务1的描述',
-    startLink: 'https://example.com/start',
-    createTime: '2024-01-01T00:00:00Z',
-    updateTime: '2024-01-01T00:00:00Z',
+    start_date: '2024-01-01T00:00:00Z',
+    end_date: '2024-01-31T23:59:59Z',
+    vote_price: 10,
+    vote_limit: 100,
   },
   {
     id: 2,
-    taskName: '任务2',
+    task_name: '任务2',
     description: '任务2的描述',
-    imageUrl: 'https://via.placeholder.com/150',
-    status: 'inactive',
+    image_url: 'https://via.placeholder.com/150',
     type: 'custom',
     reward: '奖励2',
-    startDate: '2024-02-01T00:00:00Z',
-    endDate: '2024-02-28T23:59:59Z',
-    taskNameCn: '任务2',
-    descriptionCn: '任务2的描述',
-    startLink: 'https://example.com/start2',
-    createTime: '2024-02-01T00:00:00Z',
-    updateTime: '2024-02-01T00:00:00Z',
+    start_date: '2024-02-01T00:00:00Z',
+    end_date: '2024-02-28T23:59:59Z',
+    vote_price: 0,
+    vote_limit: 0,
   },
 ];
 
 let voteQuests: TgVoteQuest[] = [
   {
     id: 1,
-    questId: 1,
-    optionDescription: '选项1的描述',
-    currentVotes: 100,
-    voteUsers: 50,
-    createTime: '2024-01-01T00:00:00Z',
-    updateTime: '2024-01-01T00:00:00Z',
-    optionName: '选项1',
+    quest_id: 1,
+    option_description: '选项1的描述',
+    current_votes: 100,
+    vote_users: 50,
+    create_time: '2024-01-01T00:00:00Z',
+    update_time: '2024-01-01T00:00:00Z',
+    option_name: '选项1',
   },
   {
     id: 2,
-    questId: 1,
-    optionDescription: '选项2的描述',
-    currentVotes: 200,
-    voteUsers: 100,
-    createTime: '2024-01-01T00:00:00Z',
-    updateTime: '2024-01-01T00:00:00Z',
-    optionName: '选项2',
+    quest_id: 1,
+    option_description: '选项2的描述',
+    current_votes: 200,
+    vote_users: 100,
+    create_time: '2024-01-01T00:00:00Z',
+    update_time: '2024-01-01T00:00:00Z',
+    option_name: '选项2',
   },
 ];
 
@@ -67,7 +59,7 @@ function getQuest(req: Request, res: Response) {
   const { id } = req.params;
   const quest = activities.find((item) => item.id === parseInt(id, 10));
   if (quest) {
-    const votes = voteQuests.filter((vote) => vote.questId === quest.id);
+    const votes = voteQuests.filter((vote) => vote.quest_id === quest.id);
     res.send({ code: 200, msg: 'success', data: { ...quest, votes } });
   } else {
     res.status(404).send({ message: 'Quest not found' });
@@ -76,51 +68,46 @@ function getQuest(req: Request, res: Response) {
 
 function addQuest(req: Request, res: Response) {
   const {
-    taskName,
+    task_name,
     description,
-    imageUrl,
-    status,
+    image_url,
     type,
     reward,
-    startDate,
-    endDate,
-    taskNameCn,
-    descriptionCn,
-    startLink,
-    optionName,
-    optionDescription,
+    start_date,
+    end_date,
+    vote_price,
+    vote_limit,
+    votes,
   } = req.body;
   const id = activities.length + 1;
-  const newQuest: TgTask = {
+  const newQuest: TgQuest = {
     id,
-    taskName,
+    task_name,
     description,
-    imageUrl,
-    status,
+    image_url,
     type,
     reward,
-    startDate,
-    endDate,
-    taskNameCn,
-    descriptionCn,
-    startLink,
-    createTime: new Date().toISOString(),
-    updateTime: new Date().toISOString(),
+    start_date,
+    end_date,
+    vote_price,
+    vote_limit,
   };
   activities.push(newQuest);
-  if (type === 'vote') {
-    const voteId = voteQuests.length + 1;
-    const newVoteQuest: TgVoteQuest = {
-      id: voteId,
-      questId: id,
-      optionDescription,
-      currentVotes: 0,
-      voteUsers: 0,
-      createTime: new Date().toISOString(),
-      updateTime: new Date().toISOString(),
-      optionName,
-    };
-    voteQuests.push(newVoteQuest);
+  if (type === 'vote' && votes) {
+    votes.forEach((vote: { option_name: string; option_description: string }) => {
+      const voteId = voteQuests.length + 1;
+      const newVoteQuest: TgVoteQuest = {
+        id: voteId,
+        quest_id: id,
+        option_description: vote.option_description,
+        current_votes: 0,
+        vote_users: 0,
+        create_time: new Date().toISOString(),
+        update_time: new Date().toISOString(),
+        option_name: vote.option_name,
+      };
+      voteQuests.push(newVoteQuest);
+    });
   }
   res.send({ code: 200, msg: 'success', data: newQuest });
 }
@@ -128,60 +115,47 @@ function addQuest(req: Request, res: Response) {
 function updateQuest(req: Request, res: Response) {
   const {
     id,
-    taskName,
+    task_name,
     description,
-    imageUrl,
-    status,
+    image_url,
     type,
     reward,
-    startDate,
-    endDate,
-    taskNameCn,
-    descriptionCn,
-    startLink,
-    optionName,
-    optionDescription,
+    start_date,
+    end_date,
+    vote_price,
+    vote_limit,
+    votes,
   } = req.body;
   const index = activities.findIndex((item) => item.id === parseInt(id, 10));
   if (index !== -1) {
     activities[index] = {
       ...activities[index],
-      taskName,
+      task_name,
       description,
-      imageUrl,
-      status,
+      image_url,
       type,
       reward,
-      startDate,
-      endDate,
-      taskNameCn,
-      descriptionCn,
-      startLink,
-      updateTime: new Date().toISOString(),
+      start_date,
+      end_date,
+      vote_price,
+      vote_limit,
     };
-    if (type === 'vote') {
-      const voteIndex = voteQuests.findIndex((vote) => vote.questId === parseInt(id, 10));
-      if (voteIndex !== -1) {
-        voteQuests[voteIndex] = {
-          ...voteQuests[voteIndex],
-          optionName,
-          optionDescription,
-          updateTime: new Date().toISOString(),
-        };
-      } else {
+    if (type === 'vote' && votes) {
+      voteQuests = voteQuests.filter((vote) => vote.quest_id !== parseInt(id, 10)); // 删除旧的投票选项
+      votes.forEach((vote: { option_name: string; option_description: string }) => {
         const voteId = voteQuests.length + 1;
         const newVoteQuest: TgVoteQuest = {
           id: voteId,
-          questId: parseInt(id, 10),
-          optionDescription,
-          currentVotes: 0,
-          voteUsers: 0,
-          createTime: new Date().toISOString(),
-          updateTime: new Date().toISOString(),
-          optionName,
+          quest_id: parseInt(id, 10),
+          option_description: vote.option_description,
+          current_votes: 0,
+          vote_users: 0,
+          create_time: new Date().toISOString(),
+          update_time: new Date().toISOString(),
+          option_name: vote.option_name,
         };
         voteQuests.push(newVoteQuest);
-      }
+      });
     }
     res.send({ code: 200, msg: 'success', data: activities[index] });
   } else {

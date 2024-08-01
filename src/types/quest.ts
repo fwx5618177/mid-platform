@@ -62,9 +62,13 @@ export interface TgTask {
     taskNameCn: string;
     descriptionCn: string;
     startLink: string;
-    optionName?: string;
-    optionDescription?: string;
+    votes?: { optionName: string; optionDescription: string }[];
   }
+  
+  export interface UpdateQuestParams extends AddQuestParams {
+    id: number;
+  }
+  
   
   export interface UpdateQuestParams extends AddQuestParams {
     id: number;

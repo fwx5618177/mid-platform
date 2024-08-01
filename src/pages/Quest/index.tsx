@@ -104,11 +104,14 @@ const Quest: React.FC = () => {
   const handleSubmit = (values: any) => {
     const { rangeTime, ...rest } = values;
     const [startDate, endDate] = rangeTime;
-    const params = { ...rest, startDate: startDate.toISOString(), endDate: endDate.toISOString() };
+    const params = { ...rest, startDate: startDate.toISOString(), endDate: endDate.toISOString(), votes: voteOptions };
+
+
+    console.log(params);
     if (currentQuest) {
-      updateRun({ id: currentQuest.id, ...params, votes: voteOptions });
+      updateRun({ id: currentQuest.id, ...params });
     } else {
-      addRun({ ...params, votes: voteOptions });
+      addRun(params);
     }
     setIsModalVisible(false);
     setCurrentQuest(null);
